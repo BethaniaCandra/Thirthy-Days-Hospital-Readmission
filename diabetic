@@ -3,7 +3,9 @@
 Thirty Days-Hospital Readmission is an indicator of the quality of care in a hospital measured within 30 days after 
 the patient is discharged from the hospital. Chronic diseases are associated with being one of the factors a patient 
 can return to the hospital, one of which is diabetes. Therefore, an accurate prediction is needed to determine whether 
-a patient needs to be readmission based on the medical recap at his first visit.*/
+a patient needs to be readmission based on the medical recap at his first visit.
+
+notes : I used jupyter notebook*/
 
 import pandas as pd
 import matplotlib as mpl
@@ -35,7 +37,7 @@ diabetic=diabetic.replace("?",np.nan)
 missing_values_count = diabetic.isnull().sum()
 missing_values_count[:]
 
-/*<span style='color:blue'> EXPLORATORY DATA ANALYSIS </span>*/
+#<span style='color:blue'> EXPLORATORY DATA ANALYSIS </span>
 /*Target = Readmisi*/
 
 plt.figure(figsize=(10,5))
@@ -317,3 +319,111 @@ sns.countplot(x='diabetesMed',hue='readmitted',data=diabetic);
 plt.title("Diabetic Medications Prescribed")
 print(diabetic.diabetesMed.value_counts())
 
+# <span style='color:blue'> DATA CLEANING </span>
+
+diabetic=diabetic.drop(['encounter_id','patient_nbr'],axis=1)
+
+diabetic.head()
+
+sns.heatmap(diabetic.corr());
+
+/*Missing value in 'weight','payer_code'<br>
+column 'medical_specialty' also have missing values (notes: in EDA we assume that the other <br>
+because of that we drop column'weight','payer_code' and 'medical_specialty' <br>*/
+
+/*Deal with Missing Value */
+
+feature_drop =['weight','payer_code','medical_specialty','citoglipton']
+
+diabetic=diabetic.drop(feature_drop,axis=1)
+diabetic.head()
+
+/*the rest missing values is still in 'race','admission_type_id',discharge_disposition_id' and 'admission_source_id' <br>
+ we fill this missing value using modus*/
+
+diabetic=diabetic.fillna(diabetic.mode().iloc[0])
+
+diabetic.head()
+
+diabetic.info()
+
+/*data is finished cleaning*/
+
+# <span style='color:blue'> Normalize </span>
+
+/*Encoding Categorical Features*/
+
+cat_features = ['race','gender','admission_type_id','discharge_disposition_id','admission_source_id',
+               'diag_1','diag_2','diag_3','metformin','repaglinide','nateglinide','chlorpropamide',
+               'glimepiride','acetohexamide','glipizide','glyburide','tolbutamide','pioglitazone',
+               'rosiglitazone','acarbose','miglitol','troglitazone','tolazamide','examide','insulin',
+               'glyburide-metformin','glipizide-metformin','glimepiride-pioglitazone','A1Cresult',
+               'metformin-rosiglitazone','metformin-pioglitazone','change','diabetesMed','max_glu_serum']
+diabetic_cat = diabetic[cat_features].values
+diabetic_cat = diabetic_cat.astype(str)
+print(diabetic_cat.shape)
+type(diabetic_cat)
+
+/*Encode the categorical input using One Hot Encoding*/
+onehot_encoder = OneHotEncoder(drop='first',sparse=False)
+X_onehot_cat = onehot_encoder.fit_transform(diabetic_cat)
+print('Input',X_onehot_cat.shape)
+type(X_onehot_cat)
+
+/*Numerical Features*/
+
+num_features = ['age','time_in_hospital','num_lab_procedures','num_procedures','num_medications',
+               'number_outpatient','number_emergency','number_inpatient','number_diagnoses']
+diabetic_num = diabetic[num_features]
+
+fig = plt.figure(figsize=(10,8))
+ax = fig.gca()
+diabetic_num.hist(ax=ax)
+plt.show()
+
+plt.figure(figsize=(20,5))
+sns.boxplot(data=diabetic_num)
+
+from sklearn.preprocessing import RobustScaler
+from sklearn.pipeline import Pipeline
+
+/*perform a robust scaler transform of the dataset*/
+trans = RobustScaler()
+diabetic_num = trans.fit_transform(diabetic_num.values)
+
+/*Merge Categorical & Numerical*/
+all_data = np.concatenate((X_onehot_cat,diabetic_num),axis=1)
+print(all_data)
+print(all_data.shape)
+type(all_data)
+
+# <span style='color:blue'> Train-Test Split </span>
+
+target=diabetic.readmitted
+target_map = target.map({"NO":0,"YES":1})
+target_map = np.array(target_map)
+
+X = all_data
+y = target_map
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+
+/*define number of features to evaluate*/
+num_features= [i+1 for i in range(X.shape[1])]
+print(num_features)
+type(num_features)
+
+/*check accuracy test logistic reggresion using parameter 1-100 <br>
+check accuracy each features*/
+results_mi= list()
+range_mi = range(1,101)
+for num_feature in range_mi:
+    X_train_mi,X_test_mi,fs_mi=select_features_mi(X_train, y_train, X_test,num_feature)
+    model_mi = LogisticRegression(solver='saga')
+    model_mi.fit(X_train_mi, y_train)
+    #evaluate the model
+    yhat_mi=model_mi.predict(X_test_mi)
+    #evaluate predictions
+    accuracy_mi = accuracy_score(y_test,yhat_mi)
+    results_mi.append(accuracy_mi*100)
+    print('>%d Accuracy: %.2f' % (num_feature,accuracy_mi*100))
