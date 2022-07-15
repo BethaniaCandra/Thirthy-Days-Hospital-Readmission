@@ -1,0 +1,29 @@
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import kerjapraktik as kp
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, recall_score, precision_score
+from sklearn.model_selection import train_test_split, cross_val_score, RepeatedStratifiedKFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn.naive_bayes import GaussianNB
+import warnings 
+warnings.filterwarnings('ignore')
+
+diabetic_data ='seaborn_data/diabetic_data.csv'
+diabetic = pd.read_csv(diabetic_data)
+
+diabetic=diabetic.replace("?",np.nan)
+
+missing_values_count = diabetic.isnull().sum()
+missing_values_count[:]
