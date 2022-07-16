@@ -1,0 +1,20 @@
+-Data source-
+    https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008 
+
+-Tools-
+    1. Jupyter Notebook 
+    2. Sypder
+    
+-Language-
+    Python
+    
+-Background-
+    Thirty Days-Hospital Readmission is an indicator of the quality of care in a hospital measured within 30 days after the patient is discharged from the hospital.
+Chronic diseases are associated with being one of the factors a patient can return to the hospital, one of which is diabetes. Therefore, an accurate prediction is 
+needed to determine whether a patient needs to be readmission based on the medical recap at his first visit. 
+    Prediction of acceptance of hospital patient readmissions from the Diabetes 130-US hospitals dataset for years 1999-2008 using the machine learning method type 
+supervised learning, whereas will compare and choose one of the best between 9 (nine) models of the machine learning type supervised learning. 9 (nine) models to be 
+used are k-Nearest Neighbor (KNN), Decision Tree Classification, Random Forest Classification, Gradient Boosting Classification, Naïve Bayes Classification, Logistic 
+Regression Classification, Support Vector Machine (SVM) Classification, Artificial Neural Network (ANN) and XGBoost. 
+    The best prediction results obtained in Artificial Neural Network (ANN) sequentional API with performance 
+reaching 25.040% in predicting the accepted readmission class and rejected readmission classes.
